@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'material_list_page.dart';
 import 'formula_page.dart';
+import 'create_formula_page.dart';
 
 void main() {
   runApp(AiromaApp());
@@ -30,6 +31,12 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => CreateFormulaPage()));
+              },
+              child: Text('Create Formula'),
+            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => MaterialListPage()));
