@@ -57,21 +57,15 @@ class _CreateFormulaPageState extends State<CreateFormulaPage> {
               decoration: InputDecoration(labelText: 'Formula Name'),
             ),
             TypeAheadField<custom.Material>(
-              textFieldConfiguration: TextFieldConfiguration(
-                controller: TextEditingController(),
-                decoration: InputDecoration(labelText: 'Material'),
-              ),
               suggestionsCallback: (pattern) async {
-                return custom.sampleMaterials.where(
-                      (material) => material.name.toLowerCase().contains(pattern.toLowerCase()),
-                ).toList();
+                return custom.sampleMaterials.where((material) => material.name.toLowerCase().contains(pattern.toLowerCase())).toList();
               },
               itemBuilder: (context, custom.Material material) {
                 return ListTile(
                   title: Text(material.name),
                 );
               },
-              onSuggestionSelected: (custom.Material material) {
+              onSelected: (custom.Material material) {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
@@ -101,6 +95,16 @@ class _CreateFormulaPageState extends State<CreateFormulaPage> {
                       ],
                     );
                   },
+                );
+              },
+              builder: (context, controller, focusNode) {
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: InputDecoration(
+                    labelText: 'Material',
+                    border: OutlineInputBorder(),
+                  ),
                 );
               },
             ),
