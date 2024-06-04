@@ -9,26 +9,32 @@ class CreateFormulaPage extends StatefulWidget {
 
 class _CreateFormulaPageState extends State<CreateFormulaPage> {
   final TextEditingController _nameController = TextEditingController();
-  final List<custom.MaterialEntry> _materialEntries = [];
-  double totalGrams = 0.0;
+  final List<MaterialSlot> _materialSlots = List.generate(10, (_) => MaterialSlot());
 
-  void _addMaterial(custom.Material material, double grams) {
+  void _addMaterialSlot() {
     setState(() {
-      _materialEntries.add(custom.MaterialEntry(material: material, grams: grams));
-      totalGrams += grams;
+      _materialSlots.add(MaterialSlot());
     });
   }
 
   void _saveFormula() {
-    if (_nameController.text.isEmpty || _materialEntries.isEmpty) {
+    if (_nameController.text.isEmpty || _materialSlots.every((slot) => slot.material == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter a name and add at least one material.')),
       );
       return;
     }
 
+    final materialEntries = _materialSlots
+        .where((slot) => slot.material != null)
+        .map((slot) => custom.MaterialEntry(
+        material: slot.material!,
+        grams: slot.gramsController.text.isEmpty ? 0 : double.parse(slot.gramsController.text)
+    ))
+        .toList();
+
     // Save the formula (this is just a placeholder for actual saving logic)
-    custom.Formula newFormula = custom.Formula(name: _nameController.text, materials: _materialEntries);
+    custom.Formula newFormula = custom.Formula(name: _nameController.text, materials: materialEntries);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Formula saved!')),
@@ -37,8 +43,8 @@ class _CreateFormulaPageState extends State<CreateFormulaPage> {
     // Clear the inputs
     setState(() {
       _nameController.clear();
-      _materialEntries.clear();
-      totalGrams = 0.0;
+      _materialSlots.clear();
+      _materialSlots.addAll(List.generate(10, (_) => MaterialSlot()));
     });
   }
 
@@ -56,69 +62,85 @@ class _CreateFormulaPageState extends State<CreateFormulaPage> {
               controller: _nameController,
               decoration: InputDecoration(labelText: 'Formula Name'),
             ),
-            TypeAheadField<custom.Material>(
-              suggestionsCallback: (pattern) async {
-                return custom.sampleMaterials.where((material) => material.name.toLowerCase().contains(pattern.toLowerCase())).toList();
-              },
-              itemBuilder: (context, custom.Material material) {
-                return ListTile(
-                  title: Text(material.name),
-                );
-              },
-              onSelected: (custom.Material material) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    final TextEditingController _gramsController = TextEditingController();
-                    return AlertDialog(
-                      title: Text('Enter Grams'),
-                      content: TextField(
-                        controller: _gramsController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(hintText: 'Grams'),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            final double grams = double.tryParse(_gramsController.text) ?? 0.0;
-                            _addMaterial(material, grams);
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Add'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              builder: (context, controller, focusNode) {
-                return TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  decoration: InputDecoration(
-                    labelText: 'Material',
-                    border: OutlineInputBorder(),
-                  ),
-                );
-              },
-            ),
             Expanded(
               child: ListView.builder(
-                itemCount: _materialEntries.length,
+                itemCount: _materialSlots.length,
                 itemBuilder: (context, index) {
-                  final entry = _materialEntries[index];
-                  return ListTile(
-                    title: Text(entry.material.name),
-                    subtitle: Text('${entry.grams} grams (${(entry.grams / totalGrams * 100).toStringAsFixed(2)}%)'),
+                  final slot = _materialSlots[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TypeAheadField<custom.Material>(
+                            suggestionsCallback: (pattern) async {
+                              return custom.sampleMaterials.where((material) => material.name.toLowerCase().contains(pattern.toLowerCase())).toList();
+                            },
+                            itemBuilder: (context, custom.Material material) {
+                              return ListTile(
+                                title: Text(material.name),
+                              );
+                            },
+                            onSelected: (custom.Material material) {
+                              setState(() {
+                                slot.material = material;
+                                slot.materialController.text = material.name;
+                              });
+                            },
+                            // Directly using builder without any deprecated fields
+                            builder: (context, controller, focusNode) {
+                              return TextField(
+                                controller: controller,
+                                focusNode: focusNode,
+                                decoration: InputDecoration(
+                                  labelText: 'Material',
+                                  border: OutlineInputBorder(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: slot.gramsController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(labelText: 'Grams'),
+                            onChanged: (value) {
+                              if (value.isNotEmpty) {
+                                setState(() {
+                                  double grams = double.parse(value);
+                                  slot.percentController.text = (grams / _totalGrams() * 100).toStringAsFixed(2);
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: slot.percentController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(labelText: '%'),
+                            onChanged: (value) {
+                              if (value.isNotEmpty) {
+                                setState(() {
+                                  double percent = double.parse(value);
+                                  slot.gramsController.text = (_totalGrams() * percent / 100).toStringAsFixed(2);
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
+            ),
+            ElevatedButton(
+              onPressed: _addMaterialSlot,
+              child: Icon(Icons.add),
             ),
             ElevatedButton(
               onPressed: _saveFormula,
@@ -129,4 +151,20 @@ class _CreateFormulaPageState extends State<CreateFormulaPage> {
       ),
     );
   }
+
+  double _totalGrams() {
+    return _materialSlots.fold(0, (sum, slot) {
+      if (slot.gramsController.text.isNotEmpty) {
+        return sum + double.parse(slot.gramsController.text);
+      }
+      return sum;
+    });
+  }
+}
+
+class MaterialSlot {
+  custom.Material? material;
+  final TextEditingController materialController = TextEditingController();
+  final TextEditingController gramsController = TextEditingController();
+  final TextEditingController percentController = TextEditingController();
 }

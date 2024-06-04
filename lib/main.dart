@@ -31,23 +31,37 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CreateFormulaPage()));
-              },
-              child: Text('Create Formula'),
+            SizedBox(
+              width: 200, // Adjust the width as needed
+              height: 60, // Adjust the height as needed
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => CreateFormulaPage()));
+                },
+                child: Text('Create Formula'),
+              ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => MaterialListPage()));
-              },
-              child: Text('Materials'),
+            SizedBox(height: 20), // Space between buttons
+            SizedBox(
+              width: 200,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => MaterialListPage()));
+                },
+                child: Text('Materials'),
+              ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => FormulaPage()));
-              },
-              child: Text('Formulas'),
+            SizedBox(height: 20), // Space between buttons
+            SizedBox(
+              width: 200,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FormulaPage()));
+                },
+                child: Text('Formulas'),
+              ),
             ),
           ],
         ),

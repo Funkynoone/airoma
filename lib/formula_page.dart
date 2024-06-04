@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'create_formula_page.dart';
 
 class FormulaPage extends StatelessWidget {
   @override
@@ -9,18 +8,7 @@ class FormulaPage extends StatelessWidget {
         title: Text('Formulas'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CreateFormulaPage()));
-              },
-              child: Text('Create Formula'),
-            ),
-            // Other formula management widgets can go here
-          ],
-        ),
+        child: Text('List of saved formulas will be displayed here.'),
       ),
     );
   }
